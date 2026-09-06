@@ -14,7 +14,6 @@ services:
       - "${BACKEND_PORT:-3000}:3000"
     volumes:
       - ./backend:/workspace/backend
-      - backend_node_modules:/workspace/node_modules
     depends_on:
       postgres:
         condition: service_healthy
@@ -54,6 +53,5 @@ services:
     restart: unless-stopped
 
 volumes:
-  backend_node_modules:
   postgres_data:
   redis_data:

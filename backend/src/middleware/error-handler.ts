@@ -1,24 +1,36 @@
 import type { ErrorRequestHandler, RequestHandler } from 'express';
 import type { Logger } from 'pino';
 
-import type { AppConfig } from '../config/index.js';
 import { HttpError } from '../shared/http-error.js';
+
+interface HttpStatusError extends Error {
+  status: number;
+  type?: string;
+}
+
+function isHttpStatusError(error: unknown): error is HttpStatusError {
+  return (
+    error instanceof Error &&
+    'status' in error &&
+    typeof error.status === 'number' &&
+    error.status >= 400 &&
+    error.status < 500
+  );
+}
 
 export const notFoundHandler: RequestHandler = (request, _response, next) => {
   next(new HttpError(404, 'NOT_FOUND', `Route ${request.method} ${request.path} was not found`));
 };
 
-export function createErrorHandler(
-  logger: Logger,
-  config: Pick<AppConfig, 'NODE_ENV'>,
-): ErrorRequestHandler {
+export function createErrorHandler(logger: Logger): ErrorRequestHandler {
   return (error: unknown, request, response, _next) => {
-    const knownError = error instanceof HttpError;
-    const statusCode = knownError ? error.statusCode : 500;
-    const message = knownError
-      ? error.message
-      : 'An unexpected error occurred';
-    const code = knownError ? error.code : 'INTERNAL_SERVER_ERROR';
+    const applicationError = error instanceof HttpError ? error : undefined;
+    const clientError = isHttpStatusError(error) ? error : undefined;
+    const knownError = applicationError !== undefined || clientError !== undefined;
+    const statusCode = applicationError?.statusCode ?? clientError?.status ?? 500;
+    const code = applicationError?.code ?? (statusCode === 413 ? 'PAYLOAD_TOO_LARGE' : 'BAD_REQUEST');
+    const message = applicationError?.message ??
+      (statusCode === 413 ? 'Request body is too large' : 'Invalid request body');
 
     if (!knownError || statusCode >= 500) {
       logger.error({ err: error, requestId: request.requestId }, 'Unhandled request error');
@@ -28,7 +40,7 @@ export function createErrorHandler(
       success: false,
       error: {
         code,
-        message: config.NODE_ENV === 'production' && !knownError ? 'An unexpected error occurred' : message,
+        message: knownError ? message : 'An unexpected error occurred',
         requestId: request.requestId,
       },
     });

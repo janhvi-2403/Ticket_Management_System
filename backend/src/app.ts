@@ -31,7 +31,7 @@ export function createApp(options: CreateAppOptions): Express {
   app.use(createRequestLogger(options.logger));
   app.use(createHealthRouter(options));
   app.use(notFoundHandler);
-  app.use(createErrorHandler(options.logger, options.config));
+  app.use(createErrorHandler(options.logger));
 
   return app;
 }

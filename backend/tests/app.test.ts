@@ -79,4 +79,15 @@ describe('runtime foundation', () => {
     expect(response.body.error).toMatchObject({ code: 'NOT_FOUND' });
     expect(response.body.error.requestId).toBe(response.headers['x-request-id']);
   });
+
+  it('returns a client error for malformed JSON', async () => {
+    const response = await request(createTestApp(healthyDatabase(), healthyRedis()))
+      .post('/health')
+      .set('Content-Type', 'application/json')
+      .send('{');
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toMatchObject({ code: 'BAD_REQUEST', message: 'Invalid request body' });
+    expect(response.body.error.requestId).toBe(response.headers['x-request-id']);
+  });
 });

@@ -50,6 +50,9 @@ npm run migrate:up --workspace=@ticket-saas/backend
 `DATABASE_URL` must be available in the environment for migration commands.
 No migration or business schema exists yet.
 
+Database conventions and the migration workflow are documented in
+[`backend/docs/database-conventions.md`](backend/docs/database-conventions.md).
+
 ## Runtime endpoints
 
 - `GET /health` is a lightweight liveness check.

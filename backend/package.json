@@ -11,9 +11,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "migrate": "node-pg-migrate --migrations-dir migrations --database-url-var DATABASE_URL",
+    "migrate": "node-pg-migrate --migrations-dir migrations --database-url-var DATABASE_URL --migration-file-language sql --migration-filename-format utc --check-order",
     "migrate:up": "npm run migrate -- up",
-    "migrate:down": "npm run migrate -- down"
+    "migrate:down": "npm run migrate -- down",
+    "migrate:check": "npm run migrate -- up --dry-run"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -37,6 +38,6 @@
     "vitest": "^3.2.4"
   },
   "engines": {
-    "node": ">=20 <21"
+    "node": ">=20.11.0 <21"
   }
 }

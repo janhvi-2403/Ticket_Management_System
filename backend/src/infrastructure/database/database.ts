@@ -1,4 +1,5 @@
 import { Pool, type QueryResultRow } from 'pg';
+import type { Logger } from 'pino';
 
 import type { AppConfig } from '../../config/index.js';
 
@@ -10,12 +11,18 @@ export interface Database {
 export class PostgresDatabase implements Database {
   private readonly pool: Pool;
 
-  public constructor(config: Pick<AppConfig, 'DATABASE_URL' | 'DATABASE_POOL_MAX'>) {
+  public constructor(
+    config: Pick<AppConfig, 'DATABASE_URL' | 'DATABASE_POOL_MAX'>,
+    logger: Logger,
+  ) {
     this.pool = new Pool({
       connectionString: config.DATABASE_URL,
       max: config.DATABASE_POOL_MAX,
       idleTimeoutMillis: 30_000,
       connectionTimeoutMillis: 5_000,
+    });
+    this.pool.on('error', (error) => {
+      logger.error({ err: error }, 'PostgreSQL pool error');
     });
   }
 

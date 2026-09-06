@@ -8,8 +8,8 @@ import { RedisClient } from './infrastructure/redis/redis.js';
 
 const config = loadConfig();
 const logger = createLogger(config);
-const database = new PostgresDatabase(config);
-const redis = new RedisClient(config);
+const database = new PostgresDatabase(config, logger);
+const redis = new RedisClient(config, logger);
 const app = createApp({ config, database, redis, logger });
 const server = createServer(app);
 let isShuttingDown = false;
