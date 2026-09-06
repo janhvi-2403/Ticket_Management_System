@@ -52,11 +52,10 @@ forward corrective migration instead of rolling production backwards.
 ## IDs and timestamps
 
 - Use PostgreSQL's native `uuid` type for future primary and foreign keys.
-- New entity IDs will be generated as UUID version 7 in the application before
-  insertion. Node.js 20 has no UUID v7 generator, and PostgreSQL 16 has no
-  native `uuidv7()` function. We intentionally do not add a database extension
-  or function for this foundation. The first schema step that needs IDs should
-  add a small, vetted UUID v7 application dependency and test it.
+- New entity IDs are generated as UUID version 7 in the application before
+  insertion using `createUuidV7` in `src/shared/uuid.ts`. Node.js 20 has no UUID
+  v7 generator, and PostgreSQL 16 has no native `uuidv7()` function. We
+  intentionally do not add a database extension or function.
 - Do not use `gen_random_uuid()` for entity IDs: it generates UUID v4 rather
   than the chosen UUID v7 strategy.
 - Time columns use `timestamptz`, never `timestamp without time zone`.
@@ -67,10 +66,11 @@ forward corrective migration instead of rolling production backwards.
 
 ## Multi-tenant preparation
 
-No tenant tables or RLS policies exist in C1. When tenant-owned tables are
-introduced, they must include a non-null `tenant_id uuid` foreign key, have
-tenant-aware indexes, and include `tenant_id` in tenant-local unique
-constraints. This supports later tenant-scoped repositories and PostgreSQL RLS
+`organizations` is the tenant root and deliberately has no `tenant_id`. When
+tenant-owned tables are introduced, they must include a non-null `tenant_id uuid`
+foreign key referencing `organizations(id)` with explicit `ON DELETE RESTRICT`,
+tenant-aware indexes, and tenant-local unique constraints that include
+`tenant_id`. This supports later tenant-scoped repositories and PostgreSQL RLS
 as defense in depth.
 
 ## Workflow
