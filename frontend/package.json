@@ -1,0 +1,16 @@
+{
+  "name": "@ticket-saas/frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc -b && vite build",
+    "dev": "vite",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -b --pretty false"
+  },
+  "engines": {
+    "node": ">=20 <21"
+  }
+}
